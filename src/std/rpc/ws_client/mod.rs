@@ -286,8 +286,8 @@ pub fn on_extrinsic_msg_submit_only(
 ) -> WsResult<()> {
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
-    match parse_status(retstr) {
-        Ok((_, val)) => end_process(out, result, val),
+    match result_from_json_response(retstr) {
+        Ok(val) => end_process(out, result, Some(val)),
         Err(e) => {
             end_process(out, result, None)?;
             Err(Box::new(e).into())
@@ -342,6 +342,9 @@ fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
 /// Todo: this is the code that was used in `parse_status` Don't we want to just print the
 /// error as is instead of introducing our custom format here?
 fn into_extrinsic_err(resp_with_err: &Value) -> RpcClientError {
+    if !resp_with_err["error"].is_object() {
+        return RpcClientError::Extrinsic("unknown error".to_string());
+    }
     let err_obj = resp_with_err["error"].as_object().unwrap();
 
     let error = err_obj
