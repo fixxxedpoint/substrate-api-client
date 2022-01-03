@@ -370,9 +370,6 @@ fn into_extrinsic_err(resp_with_err: &Value) -> RpcClientError {
 fn result_from_json_response(resp: &str) -> RpcResult<String> {
     let value: serde_json::Value = serde_json::from_str(resp)?;
 
-    // TODO this is broken - it returns an Object instead of a String (?)
-    debug!("json response: {:?}", value);
-    debug!("json response (derived): {:?}", value["params"]["result"]);
     let resp = value["result"]
         .as_str()
         .ok_or_else(|| into_extrinsic_err(&value))?;
